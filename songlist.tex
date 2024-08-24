@@ -1,0 +1,274 @@
+\documentclass[8pt]{article}
+\usepackage{calc}
+
+% You will need to modify the CUSTOMIZABLE INPUTS section
+% and modify YOUR ARTIST AND SONGS GO HERE with your content
+
+% CUSTOMIZABLE INPUTS
+
+% Paper size
+% https://www.overleaf.com/learn/latex/Page_size_and_margins
+\def\PaperSize{letterpaper} % Set this to sizes like 'a4paper', 'legalpaper', etc.
+\usepackage[\PaperSize]{geometry}
+
+% Text Inputs
+\def \TitlePageText {Seattle Sound Entertainment} % Title on the title page
+\def \TitlePageSubText {Song Inspiration Book} % Subtitle on the title page
+\def \HeaderText {Seattle Sound Entertainment} % Header text for each page
+
+% Fonts
+% builtin fonts serif:\fmfamily, sans-serif:\sffamily, typewriter:\ttfamily
+% Please refer to The LaTeX Font Catalogue when adding new fonts
+% https://tug.org/FontCatalogue/allfonts.html
+\usepackage{sqrcaps} % import Square Capitals:\sqrcfamily
+\usepackage[T1]{fontenc}
+\def \TitlePageTextFont {\sqrcfamily}
+\def \TitlePageSubTextFont {\sffamily} 
+\def \HeaderTextFont {\sqrcfamily}
+\def \FooterTextFont {\sffamily} 
+\def \ArtistTextFont {\ttfamily}
+\def \SongItemFont {\sffamily}
+
+% Spacing and Sizing
+\def \PaperSize {letterpaper}
+\def \HeaderFontSize {14} % Font size for header
+\def \FooterFontSize {14} % Font size for footer
+\def \SongIndent {0.3em} % Indentation for song list items
+\def \SongVerticalSpace {-.3em} % Spacing between song items
+\def \PageMargin {1em} % Page margin setting
+\def \ColumnSep {2em} % Space between columns
+\def \BorderWidth {1pt} % Width of the page border
+\def \NumberOfColumns {4} % Columns per page
+
+% Colors
+\usepackage{xcolor} % Load xcolor package for color definitions
+\definecolor{lightlightgray}{gray}{0.92}
+\def \BorderColor {lightgray} % Color of the page border
+\def \ArtistBGColor {lightlightgray}
+\def \HeaderTextColor {lightgray}
+\def \FooterTextColor {gray}
+\def \ArtistTextColor {darkgray}
+
+% END OF CUSTOMIZABLE INPUTS
+
+% BEGINNING OF TEMPLATE DO NOT MODIFY UNLESS YOU KNOW WHAT YOURE DOING
+
+% Page Header and Footer
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\headheight}{\HeaderFontSize pt + 4pt} % Height of the header
+\renewcommand{\headrulewidth}{0pt} % No line under the header
+\fancyhf{}
+\fancyhead[C]{\makebox[\textwidth][c]{\textbf{\HeaderTextFont\fontsize{\HeaderFontSize}{0}\color{\HeaderTextColor}\selectfont \textls{\HeaderText}}}}
+\fancyfoot[C]{\makebox[\textwidth][c]{\FooterTextFont\fontsize{\FooterFontSize}{0}\color{\FooterTextColor}\selectfont \thepage}}
+
+% Page border
+\usepackage{pgf}
+\usepackage{pgfpages}
+\pgfpagesdeclarelayout{boxed}
+{
+  \edef\pgfpageoptionborder{\BorderWidth} % Use the defined border width
+}
+{
+  \pgfpagesphysicalpageoptions
+  {%
+    logical pages=1,%
+  }
+  \pgfpageslogicalpageoptions{1}
+  {
+    border code=\pgfsetlinewidth{\BorderWidth}\pgfsetstrokecolor{\BorderColor}\pgfstroke,%
+    border shrink=\pgfpageoptionborder,%
+    resized width=1\pgfphysicalwidth,%
+    resized height=.89\pgfphysicalheight,%
+    center=\pgfpoint{.5\pgfphysicalwidth}{.5\pgfphysicalheight}%
+  }%
+}
+\pgfpagesuselayout{boxed}
+
+% Page layout and margins
+\usepackage{geometry}
+\geometry{top=\PageMargin, bottom=\PageMargin, left=\PageMargin, right=\PageMargin}
+
+% Column layout
+\usepackage{multicol}
+\setlength{\columnsep}{\ColumnSep} % Set the column separation
+
+% List imports
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% Style for section headings
+\titleformat{\section}
+{\ArtistTextFont\large\color{\ArtistTextColor}\raggedright}{}{0em}{}{}
+\titlespacing*{\section}{0pt}{1ex plus .1ex minus .2ex}{1ex plus .1ex}
+
+% Styles for artist section titles
+\newcommand{\artistsection}[1]{%
+  \section{%
+    \makebox[0pt][l]{\colorbox{\ArtistBGColor}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\bfseries #1}}}}%
+}
+
+% Styles for song list items
+\newenvironment{songlist}
+  {\begin{itemize}[itemsep=\SongVerticalSpace, label={}, left=\SongIndent, itemindent=-\SongIndent * 2]\SongItemFont\itshape}
+  {\end{itemize}}
+
+
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace{1em}
+    {\LARGE \TitlePageSubTextFont \TitlePageSubText \par} % Subtitle text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\LARGE \TitlePageSubTextFont If a song isn't in here we may still have it! \par} % Subtitle text
+    \vspace{1em}
+    {\LARGE \TitlePageSubTextFont Feel free to come up and ask <3 \par} % Subtitle text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Start the multicol environment
+\begin{multicols*}{\NumberOfColumns}
+
+% END OF TEMPLATE
+
+% YOUR ARTIST AND SONGS GO HERE
+% Note: you must find and replace & with \&
+\artistsection{50 Cent}
+\begin{songlist}
+\item 21 Questions
+\item Amusement Park
+\item Best Friend
+\item Candy Shop
+\item Disco Inferno
+\item I Get Money
+\item If I Can't
+\item In Da Club
+\item Just a Lil Bit
+\item Outta Control
+\item P I M P
+\item Piggy Bank
+\item Straight to The Bank
+\item This is How We Do
+\item Wanksta
+\item Window Shopper
+\end{songlist}
+
+\artistsection{50 Cent and Justin Timberlake}
+\begin{songlist}
+\item Ayo Technology
+\end{songlist}
+
+\artistsection{Sweetbox}
+\begin{songlist}
+\item Everything's Gonna Be Alright
+\end{songlist}
+
+\artistsection{Wynonna Judd}
+\begin{songlist}
+\item Always Will
+\item Can't Nobody Love You
+\item Come Some Rainey Night
+\item Come Some Rainy Day
+\item Don't Look Back
+\item Flies on The Butter
+\item Freedom
+\item Girls With Guitars
+\item Going Nowhere
+\item Healing
+\item Heaven Help Me
+\item Heaven Help My Heart
+\item I Saw The Light
+\item Is It Over yet
+\item It's Never Easy to Say Goodbye
+\item Let's Make a Baby King
+\item Little Bit of Love Goes a Long Long Way
+\item Little Bit of Love, a
+\item My Angel is Here
+\item My Strongest Weakness
+\item No One Else on Earth
+\item Only Love
+\item Rock Bottom
+\item She is His Only Need
+\item Somebody to Love You
+\item Tell Me Why
+\item Testify to Love
+\item To Be Loved by You
+\item When Love Starts Talking
+\item Without You're Love I'm Goin' Nowhere
+\item Woman to Woman
+\end{songlist}
+
+\artistsection{X Ambassadors}
+\begin{songlist}
+\item Unsteady
+\end{songlist}
+
+\artistsection{Zz Top}
+\begin{songlist}
+\item Beer Drinkers and Hell Raisers
+\item Blue Jean Blues
+\item Cheap Sunglasses
+\item Double Back
+\item Gimme All You're Loving
+\item Got Me Under Pressure
+\item I Thank You
+\item I'm Bad, I'm Nationwide
+\item Jesus Just Left Chicago
+\item Just Got Paid
+\item La Grange
+\item Legs
+\item Mexican Blackbird
+\item Pearl Necklace
+\item Pincushion
+\item Rough Boy
+\item Sharp Dressed Man
+\item Sleeping Bag
+\item Tube Snake Boogie
+\item Tush
+\item Tv Dinner
+\item Velcro Fly
+\item Viva Las Vegas
+\item Waitin' for The Bus
+\item What's up With That
+\end{songlist}
+% END OF YOUR ARTIST AND SONGS
+
+\end{multicols*}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+
+\end{document}
