@@ -230,40 +230,42 @@ def clean_songbook(songbook):
     print(f"song count final {sum(len(songs) for songs in updated_songbook.values())}")
     return updated_songbook
 
-def read_songbook_from_file(file_path):
-    songbook = defaultdict(set)
-    with open(file_path, 'r') as file:
-        text = file.read().strip()
-    lines = text.split('\n')
-    current_artist = None
-    for line in lines:
-        if line.lower().startswith('artist: '):
-            artist_name = line[len('artist: '):].strip()
-            artist_name = artist_name.lower()
-            current_artist = normalize_artist_name(artist_name)
-            if current_artist not in songbook:
-                songbook[current_artist] = set()
-        elif line.lower().startswith('song title: '):
-            if current_artist:
-                song_title = line[len('song title: '):].strip()
-                song_title = song_title.lower()
-                song_title = clean_words(song_title)
-                song_title = fix_song_the(song_title)
-                songbook[current_artist].add(song_title)
-    print(f"song count initial {sum(len(songs) for songs in songbook.values())}")
-    return songbook
+#Change this to read file names from drive
+# def read_songbook_from_file(file_path):
+#     songbook = defaultdict(set)
+#     with open(file_path, 'r') as file:
+#         text = file.read().strip()
+#     lines = text.split('\n')
+#     current_artist = None
+#     for line in lines:
+#         if line.lower().startswith('artist: '):
+#             artist_name = line[len('artist: '):].strip()
+#             artist_name = artist_name.lower()
+#             current_artist = normalize_artist_name(artist_name)
+#             if current_artist not in songbook:
+#                 songbook[current_artist] = set()
+#         elif line.lower().startswith('song title: '):
+#             if current_artist:
+#                 song_title = line[len('song title: '):].strip()
+#                 song_title = song_title.lower()
+#                 song_title = clean_words(song_title)
+#                 song_title = fix_song_the(song_title)
+#                 songbook[current_artist].add(song_title)
+#     print(f"song count initial {sum(len(songs) for songs in songbook.values())}")
+#     return songbook
 
-def write_songbook_to_file(artist_song_dict, output_file_path):
-    with open(output_file_path, 'w') as file:
-        # Sort artists alphabetically
-        sorted_artists = sorted(artist_song_dict.keys())
-        for artist in sorted_artists:
-            file.write(f'Artist: {title_case(artist)}\n')
-            # Sort songs alphabetically for each artist
-            sorted_songs = sorted(artist_song_dict[artist])
-            for song in sorted_songs:
-                file.write(f'Song Title: {title_case(song)}\n')
-            file.write('\n')  # Add a blank line between artists
+#Change this to write files to drive
+# def write_songbook_to_file(artist_song_dict, output_file_path):
+#     with open(output_file_path, 'w') as file:
+#         # Sort artists alphabetically
+#         sorted_artists = sorted(artist_song_dict.keys())
+#         for artist in sorted_artists:
+#             file.write(f'Artist: {title_case(artist)}\n')
+#             # Sort songs alphabetically for each artist
+#             sorted_songs = sorted(artist_song_dict[artist])
+#             for song in sorted_songs:
+#                 file.write(f'Song Title: {title_case(song)}\n')
+#             file.write('\n')  # Add a blank line between artists
 
 def write_latex_songbook_to_file(artist_song_dict, output_file_path):
     with open(output_file_path, 'w') as file:
