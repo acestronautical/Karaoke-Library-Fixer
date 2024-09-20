@@ -116,18 +116,35 @@ class SongEntry:
         template,
         file_ext,
         current_file_name,
-        new_file_name,
+        fallback_file_name,
         current_dir,
     ):
-        self.discid = discid
-        self.trackno = trackno
         self.artist = artist.strip(" ") if artist else None
         self.title = title.strip(" ") if title else None
         self.template = template
         self.file_ext = file_ext.lower()
         self.current_file_name = current_file_name
-        self.new_file_name = new_file_name
+        self.fallback_file_name = fallback_file_name
         self.current_dir = current_dir
+        self.trackno = trackno if trackno else "01"
+        if discid is None or discid.startswith("XX"):
+            discid = "XX" + compute_file_hash(self.old_path())[:5]
+        self.discid = discid.upper()
+
+    def old_path(self):
+        return Path(self.current_dir) / f"{self.current_file_name}{self.file_ext}"
+
+    def bump_trackno(self):
+        self.trackno = str(int(self.trackno) + 1).zfill(2)
+
+    def new_file_name(self):
+        if self.title and self.artist and self.trackno and self.discid:
+            return f"{self.discid.strip()}-{self.trackno.strip()} - {titlecase(self.artist).strip()} - {titlecase(self.title).strip()}"
+        else:
+            return self.fallback_file_name
+
+    def new_file_name_wext(self):
+        return f"{self.new_file_name()}{self.file_ext}"
 
     def __lt__(self, other):
         if self.trackno and other.trackno:
@@ -136,7 +153,24 @@ class SongEntry:
             return self.title < other.title
 
     def __str__(self):
-        return f" discid: {self.discid}, trackno: {self.trackno}, artist: {self.artist}, title: {self.title}, template: {get_global_varname(self.template)}, current file name: {self.current_file_name}, new file name: {self.new_file_name}, current dir: {self.current_dir}"
+        return f" discid: {self.discid}, trackno: {self.trackno}, artist: {self.artist}, title: {self.title}, template: {get_global_varname(self.template)}, current file name: {self.current_file_name}, new file name: {self.fallback_file_name}, current dir: {self.current_dir}"
+
+
+def name_cdg_to_mp3(songs: list[SongEntry]) -> None:
+    # Create a dictionary to map base names of .mp3 files (without extension) to their discids
+    mp3s = {entry.old_path().stem: entry.discid for entry in songs if entry.file_ext == ".mp3"}
+
+    for entry in songs:
+        # Check if the current entry is a .cdg file
+        if entry.file_ext == ".cdg":
+            # Create the base name for the .cdg file (without extension)
+            base_name = entry.old_path().stem  # Remove .cdg extension
+
+            # Check if the base name matches an existing .mp3 base name
+            if base_name in mp3s:
+                entry.discid = mp3s[base_name]
+            else:
+                print(f"Failed to match .cdg with .mp3 for {entry.current_file_name}, copying anyways")
 
 
 def normalize_artist(name):
@@ -336,9 +370,6 @@ def clean_song_book(song_book, flip=True, merge=True):
     final_count = len(updated_song_book)
     print(f"Updated Song Book has {final_count} artists", flush=True)
     print(f"Updated Song Book has: {sum(len(songs) for songs in updated_song_book.values())} songs", flush=True)
-    for artist, entries in updated_song_book.items():
-        for entry in entries:
-            entry.new_file_name = make_clean_file_name(entry)
     return updated_song_book
 
 
@@ -363,18 +394,6 @@ def is_music(file_path):
     return ext in valid_extensions
 
 
-def make_clean_file_name(entry):
-    discid = (
-        entry.discid
-        if entry.discid is not None
-        else "XX" + entry.artist.strip()[:1].replace(" ", "") + entry.title.strip()[:1].replace(" ", "") + "0"
-    )
-    trackno = entry.trackno if entry.trackno is not None else "01"
-    entry.discid = discid.upper()
-    entry.trackno = trackno
-    return f"{discid.upper().strip()}-{trackno.strip()} - {titlecase(entry.artist).strip()} - {titlecase(entry.title).strip()}"
-
-
 def make_entry_from_template(file_path, file_name):
     dir_name = os.path.dirname(file_path)
     text, ext = os.path.splitext(file_name)
@@ -384,23 +403,25 @@ def make_entry_from_template(file_path, file_name):
     for template in all_templates:
         match = re.match(template, cleaned)
         if match:
-            artist = match.group("Artist")
-            title = match.group("Title")
-            # If Artist or Title are missing this is an ANTIPATTERN
-            if not artist or not artist.strip() or not title or not title.strip():
+            if (
+                not match.groupdict().get("Artist")
+                or not match.groupdict().get("Artist").strip()
+                or not match.groupdict().get("Title")
+                or not match.groupdict().get("Title").strip()
+            ):
                 break
             entry = SongEntry(
                 discid=match.group("DiscID"),
                 trackno=match.group("TrackNo"),
-                artist=artist.strip(),
-                title=title.strip(),
+                artist=match.group("Artist").strip(),
+                title=match.group("Title").strip(),
                 template=template,
                 file_ext=ext,
                 current_file_name=text,
-                new_file_name=cleaned,
+                fallback_file_name=cleaned,
                 current_dir=dir_name,
             )
-            clean_file_name = make_clean_file_name(entry)
+            clean_file_name = entry.fallback_file_name
             # Adjust file name based on certain conditions
             if clean_file_name.startswith("XX"):
                 clean_file_name = clean_file_name[11:]
@@ -424,7 +445,7 @@ def make_broken_entry(file_path, file_name):
         template=None,
         file_ext=ext,
         current_file_name=text,
-        new_file_name=cleaned,
+        fallback_file_name=cleaned,
         current_dir=dir_name,
     )
 
@@ -451,10 +472,10 @@ def read_song_book_from_dir(root_dir):
             entry.artist = normalize_artist(entry.artist.strip())
             entry.title = normalize_title(entry.title.strip())
             song_book[entry.artist].append(entry)
-            print(f"parsed {make_clean_file_name(entry)}", flush=True)
+            print(f"parsed {entry.new_file_name()}", flush=True)
         else:
             broken_song_book[""].append(entry)
-            print(f"could not parse {entry.new_file_name}", flush=True)
+            print(f"could not parse {entry.fallback_file_name}", flush=True)
     return song_book, broken_song_book
 
 
@@ -518,64 +539,31 @@ def compute_file_hash(file_path, chunk_size=4096):
 
 
 def rename_and_rearchive(entry, root_dir, delete=False):
-    old_path = Path(entry.current_dir) / f"{entry.current_file_name}{entry.file_ext}"
+    old_path = entry.old_path()
     artist_dir = (
         Path(root_dir) / entry.artist[0].upper() / titlecase(entry.artist.strip()) if entry.artist else Path(root_dir) / "#Badly Named"
     )
-    new_path = artist_dir / f"{entry.new_file_name}{entry.file_ext}"
-    new_path_fallback = Path(root_dir) / "#Broken Archive" / f"{entry.current_file_name}{entry.file_ext}"
-    temp_dir = Path(root_dir) / "#Temp Folder Delete Me" / entry.new_file_name
+    new_path = artist_dir / entry.new_file_name_wext()
+    new_path_fallback = Path(root_dir) / "#Broken Archive" / entry.new_file_name_wext()
+    temp_dir = Path(root_dir) / "#Temp Folder Delete Me" / entry.new_file_name()
 
-    if not entry.new_file_name.startswith("XX") and old_path == new_path:
+    if old_path == new_path:
         return
 
-    same_hash_found = False
-    old_trackno = entry.trackno
-    lowest_trackno = 10
-    saw_lowest = False
-    if entry.new_file_name.startswith("XX"):
-        for count in range(1, 11):
-            entry.trackno = str(int(count)).zfill(2)
-            entry.new_file_name = make_clean_file_name(entry)
-            new_path = artist_dir / f"{entry.new_file_name}{entry.file_ext}"
-            if not new_path.exists():
-                if not saw_lowest:
-                    lowest_trackno = entry.trackno
-                saw_lowest = True
-                continue
-            if compute_file_hash(old_path) == compute_file_hash(new_path):
-                same_hash_found = True
-                break
-        if same_hash_found:
-            if old_path == new_path:
-                return
-            print(
-                f"\nExact file hash duplicate: {old_path} and {new_path}, not copying.",
-                flush=True,
-            )
-            handle_delete_original(old_path, new_path, delete)
-            return
-        entry.trackno = old_trackno
-        entry.new_file_name = make_clean_file_name(entry)
-        new_path = artist_dir / f"{entry.new_file_name}{entry.file_ext}"
-        if new_path.exists():
-            print(f"\nRenumbering: {old_path} and {new_path}.", flush=True)
-            entry.trackno = lowest_trackno
-            entry.new_file_name = make_clean_file_name(entry)
-            new_path = artist_dir / f"{entry.new_file_name}{entry.file_ext}"
     # Create necessary directories
-    for path in [new_path_fallback.parent, new_path.parent, temp_dir]:
-        path.mkdir(parents=True, exist_ok=True)
-    try:
-        # Process archives (.zip, .rar)
-        if entry.file_ext in [".zip", ".rar"]:
-            process_archive(old_path, new_path, new_path_fallback, temp_dir)
-        else:
-            shutil.copy2(old_path, new_path)
-            print(f"\nCopied:\n {old_path} to\n {new_path}", flush=True)
-    except Exception as e:
-        print(f"Error: {e}")
-        return
+    if not new_path.exists():
+        for path in [new_path_fallback.parent, new_path.parent, temp_dir]:
+            path.mkdir(parents=True, exist_ok=True)
+        try:
+            # Process archives (.zip, .rar)
+            if entry.file_ext in [".zip", ".rar"]:
+                process_archive(old_path, new_path, new_path_fallback, temp_dir)
+            else:
+                shutil.copy2(old_path, new_path)
+                print(f"\nCopied:\n {old_path} to\n {new_path}", flush=True)
+        except Exception as e:
+            print(f"Error: {e}")
+            return
 
     handle_delete_original(old_path, new_path, delete)
 
@@ -648,6 +636,8 @@ def run_fix_songs(args):
     folder_path = args.folder_path
     new_path = args.new_path
     song_book, broken_song_book = read_song_book_from_dir(folder_path)
+    for artist in sorted(song_book):
+        name_cdg_to_mp3(song_book[artist])
     song_book = clean_song_book(song_book, args.flip, args.merge)
 
     for artist in sorted(song_book):
