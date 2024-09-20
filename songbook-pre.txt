@@ -1,0 +1,149 @@
+\documentclass[8pt]{article}
+\usepackage{calc}
+
+% You will need to modify the CUSTOMIZABLE INPUTS section
+% and modify YOUR ARTIST AND SONGS GO HERE with your content
+
+% CUSTOMIZABLE INPUTS
+
+% Paper size
+% https://www.overleaf.com/learn/latex/Page_size_and_margins
+\def\PaperSize{letterpaper} % Set this to sizes like 'a4paper', 'legalpaper', etc.
+\usepackage[\PaperSize]{geometry}
+
+% Text Inputs
+\def \TitlePageText {Seattle Sound Entertainment} % Title on the title page
+\def \TitlePageSubText {Song Inspiration Book} % Subtitle on the title page
+\def \HeaderText {Seattle Sound Entertainment} % Header text for each page
+
+% Fonts
+% builtin fonts serif:\fmfamily, sans-serif:\sffamily, typewriter:\ttfamily
+% Please refer to The LaTeX Font Catalogue when adding new fonts
+% https://tug.org/FontCatalogue/allfonts.html
+\usepackage{sqrcaps} % import Square Capitals:\sqrcfamily
+\usepackage[T1]{fontenc}
+\def \TitlePageTextFont {\sqrcfamily}
+\def \TitlePageSubTextFont {\sffamily} 
+\def \HeaderTextFont {\sqrcfamily}
+\def \FooterTextFont {\sffamily} 
+\def \ArtistTextFont {\ttfamily}
+\def \SongItemFont {\sffamily}
+
+% Spacing and Sizing
+\def \HeaderFontSize {14} % Font size for header
+\def \FooterFontSize {14} % Font size for footer
+\def \SongIndent {0.3em} % Indentation for song list items
+\def \SongVerticalSpace {-.3em} % Spacing between song items
+\def \PageMargin {1em} % Page margin setting
+\def \ColumnSep {2em} % Space between columns
+\def \BorderWidth {1pt} % Width of the page border
+\def \NumberOfColumns {4} % Columns per page
+
+% Colors
+\usepackage{xcolor} % Load xcolor package for color definitions
+\definecolor{lightlightgray}{gray}{0.92}
+\def \BorderColor {lightgray} % Color of the page border
+\def \ArtistBGColor {lightlightgray}
+\def \HeaderTextColor {lightgray}
+\def \FooterTextColor {gray}
+\def \ArtistTextColor {darkgray}
+
+% END OF CUSTOMIZABLE INPUTS
+
+% BEGINNING OF TEMPLATE DO NOT MODIFY UNLESS YOU KNOW WHAT YOURE DOING
+
+% Page Header and Footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setlength{\headheight}{\HeaderFontSize pt + 4pt} % Height of the header
+\renewcommand{\headrulewidth}{0pt} % No line under the header
+\fancyhf{}
+\fancyhead[C]{\makebox[\textwidth][c]{\textbf{\HeaderTextFont\fontsize{\HeaderFontSize}{0}\color{\HeaderTextColor}\selectfont \textls{\HeaderText}}}}
+\fancyfoot[C]{\makebox[\textwidth][c]{\FooterTextFont\fontsize{\FooterFontSize}{0}\color{\FooterTextColor}\selectfont \thepage}}
+
+% Page border
+\usepackage{pgf}
+\usepackage{pgfpages}
+\pgfpagesdeclarelayout{boxed}
+{
+  \edef\pgfpageoptionborder{\BorderWidth} % Use the defined border width
+}
+{
+  \pgfpagesphysicalpageoptions
+  {%
+    logical pages=1,%
+  }
+  \pgfpageslogicalpageoptions{1}
+  {
+    border code=\pgfsetlinewidth{\BorderWidth}\pgfsetstrokecolor{\BorderColor}\pgfstroke,%
+    border shrink=\pgfpageoptionborder,%
+    resized width=1\pgfphysicalwidth,%
+    resized height=.89\pgfphysicalheight,%
+    center=\pgfpoint{.5\pgfphysicalwidth}{.5\pgfphysicalheight}%
+  }%
+}
+\pgfpagesuselayout{boxed}
+
+% Page layout and margins
+\usepackage{geometry}
+\geometry{top=\PageMargin, bottom=\PageMargin, left=\PageMargin, right=\PageMargin}
+
+% Column layout
+\usepackage{multicol}
+\setlength{\columnsep}{\ColumnSep} % Set the column separation
+
+% List imports
+\usepackage{titlesec}
+\usepackage{enumitem}
+
+% Style for section headings
+\titleformat{\section}
+{\ArtistTextFont\large\color{\ArtistTextColor}\raggedright}{}{0em}{}{}
+\titlespacing*{\section}{0pt}{1ex plus .1ex minus .2ex}{1ex plus .1ex}
+
+% Styles for artist section titles
+\newcommand{\artistsection}[1]{%
+  \section{%
+    \makebox[0pt][l]{\colorbox{\ArtistBGColor}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{\bfseries #1}}}}%
+}
+
+% Styles for song list items
+\newenvironment{songlist}
+  {\begin{itemize}[itemsep=\SongVerticalSpace, label={}, left=\SongIndent, itemindent=-\SongIndent * 2]\SongItemFont\itshape}
+  {\end{itemize}}
+
+
+\begin{document}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace{1em}
+    {\LARGE \TitlePageSubTextFont \TitlePageSubText \par} % Subtitle text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\LARGE \TitlePageSubTextFont If a song isn't in here we may still have it! \par} % Subtitle text
+    \vspace{1em}
+    {\LARGE \TitlePageSubTextFont Feel free to come up and ask <3 \par} % Subtitle text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Start the multicol environment
+\begin{multicols*}{\NumberOfColumns}
+
+% END OF TEMPLATE

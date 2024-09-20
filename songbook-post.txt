@@ -1,0 +1,23 @@
+
+% END OF YOUR ARTIST AND SONGS
+
+\end{multicols*}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+% Title Page
+\begin{titlepage}
+    \centering % Center Horizontally
+    \vspace*{\fill} % Center Vertically
+    {\Huge \TitlePageTextFont \TitlePageText \par} % Title text
+    \vspace*{\fill} % Center Vertically
+\end{titlepage}
+
+
+\end{document}

@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run fixsongs.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/fixsongs.py",
+            "args": [
+                "new-sample-lib",
+                "sample-lib",
+                "--delete",
+                "--flip",
+                "--merge"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
