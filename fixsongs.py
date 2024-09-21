@@ -262,9 +262,11 @@ def fix_artist_suffix(entry, pattern, suffix):
         entry.title = title_clean + f" ({suffix})"
     return entry
 
+
 def remove_suffix(text, pattern, suffix):
     text = re.sub(pattern, "", text).strip()
     return text
+
 
 def remove_all_flags(text):
     text = remove_suffix(text, PATTERNS["wvocals"], "wvocals")
@@ -273,12 +275,14 @@ def remove_all_flags(text):
     text = remove_suffix(text, PATTERNS["sc"], "sc")
     return text
 
+
 def fix_all_artist_flags(entry):
     entry = fix_artist_suffix(entry, PATTERNS["wvocals"], "wvocals")
     entry = fix_artist_suffix(entry, PATTERNS["duet"], "duet")
     entry = fix_artist_suffix(entry, PATTERNS["christmas"], "christmas")
     entry = fix_artist_suffix(entry, PATTERNS["sc"], "sc")
     return entry
+
 
 def fix_song_artist_flipped(song_book):
     updated_song_book = {}
@@ -316,7 +320,6 @@ def fix_song_artist_flipped(song_book):
             updated_song_book[artist] = entries
 
     return updated_song_book
-
 
 
 def merge_similar_typo_artists(song_book):
@@ -551,18 +554,25 @@ def compute_short_hash(file_path, chunk_size=4096):
             hash_sha256.update(chunk)
     hash_hex = hash_sha256.hexdigest()
     # Replace non-alphanumeric characters with 'A'
-    cleaned_hash = re.sub(r'[^a-zA-Z0-9]', 'A', hash_hex)
+    cleaned_hash = re.sub(r"[^a-zA-Z0-9]", "A", hash_hex)
     return cleaned_hash[:5]
+
+
+BROKEN_ARCHIVE_DIR = "#Broken Archive"
+TEMP_FOLDER_DIR = "#Temp Folder Delete Me"
+BADLY_NAMED_DIR = "#Badly Named"
 
 
 def rename_and_rearchive(entry, root_dir, delete=False):
     old_path = entry.old_path()
+    if BROKEN_ARCHIVE_DIR in old_path or TEMP_FOLDER_DIR in old_path:
+        return
     artist_dir = (
-        Path(root_dir) / entry.artist[0].upper() / titlecase(entry.artist.strip()) if entry.artist else Path(root_dir) / "#Badly Named"
+        Path(root_dir) / entry.artist[0].upper() / titlecase(entry.artist.strip()) if entry.artist else Path(root_dir) / BADLY_NAMED_DIR
     )
     new_path = artist_dir / entry.new_file_name_wext()
-    new_path_fallback = Path(root_dir) / "#Broken Archive" / entry.new_file_name_wext()
-    temp_dir = Path(root_dir) / "#Temp Folder Delete Me" / entry.new_file_name()
+    new_path_fallback = Path(root_dir) / BROKEN_ARCHIVE_DIR / entry.new_file_name_wext()
+    temp_dir = Path(root_dir) / TEMP_FOLDER_DIR / entry.new_file_name()
 
     if old_path == new_path or str(old_path).lower() == str(new_path).lower():
         return
