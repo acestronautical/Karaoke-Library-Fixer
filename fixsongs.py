@@ -546,7 +546,7 @@ def rename_and_rearchive(entry, root_dir, delete=False):
     new_path_fallback = Path(root_dir) / "#Broken Archive" / entry.new_file_name_wext()
     temp_dir = Path(root_dir) / "#Temp Folder Delete Me" / entry.new_file_name()
 
-    if old_path == new_path:
+    if old_path == new_path or str(old_path).lower() == str(new_path).lower():
         return
 
     # Create necessary directories
@@ -615,7 +615,7 @@ def handle_delete_original(old_path, new_path, delete=False):
     """Delete the original file after re-archiving if the delete flag is set."""
     if not delete:
         return
-    if old_path == new_path:
+    if str(old_path).lower() == str(new_path).lower():
         print(f"Not deleting same path: {new_path} to {old_path}", flush=True)
         return
     try:
