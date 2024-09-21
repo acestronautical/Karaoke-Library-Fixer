@@ -126,8 +126,10 @@ class SongEntry:
         self.fallback_file_name = fallback_file_name
         self.current_dir = current_dir
         self.trackno = str(int(trackno)).zfill(2) if trackno else "01"
-        if discid is None or discid.isdigit():
+        if discid is None:
             discid = "XX" + compute_short_hash(self.old_path())
+        if discid.isdigit():
+            discid = "XX" + discid
         self.discid = discid.replace("-", "").upper()
 
     def old_path(self):
@@ -293,7 +295,8 @@ def fix_song_artist_flipped(song_book):
             if entry.title == entry.artist:
                 songs_are_artist = False
                 break
-            norm_artist = normalize_artist(entry.title)  # Normalize the artist name
+            norm_artist = normalize_artist(entry.title)
+            norm_artist = remove_all_flags(norm_artist)
             norm_artist_the = norm_artist + ", the"
             if norm_artist_the in artist_keys:
                 found = norm_artist_the
@@ -486,14 +489,14 @@ def read_song_book_from_dir(root_dir):
             continue
         entry = eval_templates(file_path)
         if entry.artist:
+            entry.title = normalize_title(entry.title)
             entry = fix_all_artist_flags(entry)
             entry.artist = normalize_artist(entry.artist)
-            entry.title = normalize_title(entry.title)
             song_book[entry.artist].append(entry)
-            print(f"parsed {entry.new_file_name()}", flush=True)
+            print(f"\nparsed:\n {entry.new_file_name()}\n from\n {entry.fallback_file_name}", flush=True)
         else:
             broken_song_book[""].append(entry)
-            print(f"could not parse {entry.fallback_file_name}", flush=True)
+            print(f"\ncould not parse:\n {entry.fallback_file_name}", flush=True)
     return song_book, broken_song_book
 
 
@@ -565,7 +568,7 @@ BADLY_NAMED_DIR = "#Badly Named"
 
 def rename_and_rearchive(entry, root_dir, delete=False):
     old_path = entry.old_path()
-    if BROKEN_ARCHIVE_DIR in old_path or TEMP_FOLDER_DIR in old_path:
+    if BROKEN_ARCHIVE_DIR in str(old_path) or TEMP_FOLDER_DIR in str(old_path):
         return
     artist_dir = (
         Path(root_dir) / entry.artist[0].upper() / titlecase(entry.artist.strip()) if entry.artist else Path(root_dir) / BADLY_NAMED_DIR
