@@ -250,6 +250,7 @@ PATTERNS = {
     ),
     "duet": re.compile(r"(\(duet version\)|\(duet\)| duet )", re.IGNORECASE),
     "christmas": re.compile(r"(\(christmas\))", re.IGNORECASE),
+    "sc": re.compile(r"(\[sc\])", re.IGNORECASE),
 }
 
 
@@ -261,48 +262,61 @@ def fix_artist_suffix(entry, pattern, suffix):
         entry.title = title_clean + f" ({suffix})"
     return entry
 
+def remove_suffix(text, pattern, suffix):
+    text = re.sub(pattern, "", text).strip()
+    return text
+
+def remove_all_flags(text):
+    text = remove_suffix(text, PATTERNS["wvocals"], "wvocals")
+    text = remove_suffix(text, PATTERNS["duet"], "duet")
+    text = remove_suffix(text, PATTERNS["christmas"], "christmas")
+    text = remove_suffix(text, PATTERNS["sc"], "sc")
+    return text
 
 def fix_all_artist_flags(entry):
     entry = fix_artist_suffix(entry, PATTERNS["wvocals"], "wvocals")
     entry = fix_artist_suffix(entry, PATTERNS["duet"], "duet")
     entry = fix_artist_suffix(entry, PATTERNS["christmas"], "christmas")
+    entry = fix_artist_suffix(entry, PATTERNS["sc"], "sc")
     return entry
-
 
 def fix_song_artist_flipped(song_book):
     updated_song_book = {}
     artist_keys = song_book.keys()
     for artist, entries in song_book.items():
-        most_songs = 0
         songs_are_artist = True
         for entry in entries:
-            norm_artist = normalize_artist(entry.title)
+            if entry.title == entry.artist:
+                songs_are_artist = False
+                break
+            norm_artist = normalize_artist(entry.title)  # Normalize the artist name
             norm_artist_the = norm_artist + ", the"
-            found = ""
-            if norm_artist in artist_keys:
-                found = norm_artist
             if norm_artist_the in artist_keys:
                 found = norm_artist_the
+            elif norm_artist in artist_keys:
+                found = norm_artist
             else:
                 songs_are_artist = False
-                updated_song_book[artist] = entries
                 break
-            most_songs = max(
-                len(song_book[artist]),
-                len(song_book[found]),
-            )
-        if most_songs == len(song_book[artist]):
+            if len(song_book[artist]) > len(song_book.get(found, [])):
+                songs_are_artist = False
+                break
+
+        if songs_are_artist:
+            for entry in entries:
+                entry.artist, entry.title = entry.title, entry.artist
+                entry.artist = normalize_artist(entry.artist)
+                entry.title = normalize_title(entry.title)
+                fix_all_artist_flags(entry)
+                if entry.artist not in updated_song_book:
+                    updated_song_book[entry.artist] = []
+                updated_song_book[entry.artist].append(entry)
+                print(f"Should be Artist: {entry.artist} Song: {entry.title}")
+        else:
             updated_song_book[artist] = entries
-        elif songs_are_artist:
-            for entry in list(entries):
-                song_artist = found
-                entry.title = entry.artist
-                entry.artist = song_artist
-                if song_artist not in updated_song_book:
-                    updated_song_book[song_artist] = []
-                updated_song_book[song_artist].append(entry)
-                print(f"should be Artist: {song_artist} Song: {artist}")
+
     return updated_song_book
+
 
 
 def merge_similar_typo_artists(song_book):
@@ -341,7 +355,7 @@ def merge_similar_typo_artists(song_book):
             entry.artist = max_artist
         if len(same_artists) > 1:
             print(f"combining {max_artist} < {same_artists}", flush=True)
-        updated_song_book[max_artist] = combined_songs
+        updated_song_book[max_artist] = list(combined_songs)
     return updated_song_book
 
 
@@ -350,6 +364,7 @@ def fix_artist_missing_the(song_book):
         variant_artist = f"{artist}, the"
         if variant_artist in song_book:
             for entry in song_book[artist]:
+                print(f"adding ', the' to {entry.artist}", flush=True)
                 entry.artist += ", the"
             song_book[variant_artist].extend(song_book[artist])
             del song_book[artist]
@@ -362,8 +377,11 @@ def clean_song_book(song_book, flip=True, merge=True):
     print(f"Song Book has: {sum(len(songs) for songs in song_book.values())} songs", flush=True)
     updated_song_book = {artist: songs for artist, songs in song_book.items() if songs}
     updated_song_book = fix_artist_missing_the(updated_song_book)
+    if merge:
+        updated_song_book = merge_similar_typo_artists(updated_song_book)
     if flip:
         updated_song_book = fix_song_artist_flipped(updated_song_book)
+        updated_song_book = fix_artist_missing_the(updated_song_book)
     if merge:
         updated_song_book = merge_similar_typo_artists(updated_song_book)
     final_count = len(updated_song_book)
@@ -567,7 +585,7 @@ def rename_and_rearchive(entry, root_dir, delete=False):
                     print(f"\nMoved:\n {old_path} to\n {new_path}", flush=True)
                     old_path.rename(new_path)
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"\nError: {e}\n")
             return
 
     handle_delete_original(old_path, new_path, delete)
@@ -592,7 +610,7 @@ def process_archive(old_path, new_path, new_path_fallback, temp_dir, entry):
                         new_archive.write(file, arcname=file.name)
         print(f"\nCopied and renamed contents:\n {old_path} to\n {new_path}", flush=True)
     except Exception as e:
-        print(f"Error: {e}. Bad archive file: {old_path}", flush=True)
+        print(f"\nError: {e}. Bad archive file: {old_path}\n", flush=True)
         print(f"Copying bad archive from {old_path} to {new_path_fallback}.", flush=True)
         shutil.copy2(old_path, new_path_fallback)
 
@@ -618,10 +636,8 @@ def handle_delete_original(old_path, new_path, delete=False):
         if os.path.exists(old_path):
             os.remove(old_path)
             print(f"Deleted original file: {old_path}", flush=True)
-        else:
-            print(f"File not found: {old_path}", flush=True)
     except Exception as e:
-        print(f"Error deleting file {old_path}: {e}", flush=True)
+        print(f"\nError deleting file {old_path}: {e}\n", flush=True)
 
 
 def remove_empty_dirs(path):
@@ -644,14 +660,14 @@ def run_fix_songs(args):
     for artist in sorted(song_book):
         name_cdg_to_mp3(song_book[artist])
     song_book = clean_song_book(song_book, args.flip, args.merge)
+    if not args.dryrun:
+        for artist in sorted(song_book):
+            for entry in sorted(song_book[artist]):
+                rename_and_rearchive(entry, Path(new_path), args.delete)
 
-    for artist in sorted(song_book):
-        for entry in sorted(song_book[artist]):
-            rename_and_rearchive(entry, Path(new_path), args.delete)
-
-    if "" in broken_song_book:
-        for entry in broken_song_book[""]:
-            rename_and_rearchive(entry, Path(new_path), args.delete)
+        if "" in broken_song_book:
+            for entry in broken_song_book[""]:
+                rename_and_rearchive(entry, Path(new_path), args.delete)
 
     # Remove directories
     remove_temp_directory(Path(new_path))
@@ -717,6 +733,12 @@ def main():
         action="store_true",
         default=False,
         help="Attempt to merge mispelled artists",
+    )
+    parser.add_argument(
+        "--dryrun",
+        action="store_true",
+        default=False,
+        help="Don't make any file changes",
     )
     args = parser.parse_args()
     # Run the main song-fixing logic
