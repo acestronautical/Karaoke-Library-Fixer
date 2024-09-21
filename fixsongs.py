@@ -126,9 +126,9 @@ class SongEntry:
         self.fallback_file_name = fallback_file_name
         self.current_dir = current_dir
         self.trackno = str(int(trackno)).zfill(2) if trackno else "01"
-        if discid is None:
+        if discid is None or discid.isdigit():
             discid = "XX" + compute_short_hash(self.old_path())
-        self.discid = discid.upper()
+        self.discid = discid.replace("-", "").upper()
 
     def old_path(self):
         return Path(self.current_dir) / f"{self.current_file_name}{self.file_ext}"
