@@ -125,9 +125,9 @@ class SongEntry:
         self.current_file_name = current_file_name
         self.fallback_file_name = fallback_file_name
         self.current_dir = current_dir
-        self.trackno = trackno if trackno else "01"
+        self.trackno = str(int(trackno)).zfill(2) if trackno else "01"
         if discid is None or discid.startswith("XX"):
-            discid = "XX" + compute_file_hash(self.old_path())[:5]
+            discid = "XX" + compute_short_hash(self.old_path())
         self.discid = discid.upper()
 
     def old_path(self):
@@ -526,13 +526,15 @@ def write_latex_songbook_to_file(artist_song_dict, output_file_path):
             file.write(post_file.read())
 
 
-def compute_file_hash(file_path, chunk_size=4096):
-    """Compute the SHA-256 hash of a file."""
+def compute_short_hash(file_path, chunk_size=4096):
     hash_sha256 = hashlib.sha256()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(chunk_size), b""):
             hash_sha256.update(chunk)
-    return hash_sha256.hexdigest()
+    hash_hex = hash_sha256.hexdigest()
+    # Replace non-alphanumeric characters with 'A'
+    cleaned_hash = re.sub(r'[^a-zA-Z0-9]', 'A', hash_hex)
+    return cleaned_hash[:5]
 
 
 def rename_and_rearchive(entry, root_dir, delete=False):
@@ -655,7 +657,18 @@ def run_fix_songs(args):
         flattened_dict[artist] = remove_similar_songs(flattened_dict[artist])
     songbook_path = Path(new_path) / "#Song Book"
     songbook_path.mkdir(parents=True, exist_ok=True)
-    json_output_path = songbook_path / "songbook.json"
+    website_path = songbook_path / "website"
+    website_path.mkdir(parents=True, exist_ok=True)
+
+    # Copy contents of a folder (source_folder_path) to the songbook_path
+    source_folder_path = Path("website")  # Update this path
+    for item in source_folder_path.iterdir():
+        if item.is_file():  # Only copy files
+            shutil.copy(item, website_path)
+        elif item.is_dir():  # If it's a directory, copy its contents
+            shutil.copytree(item, website_path / item.name, dirs_exist_ok=True)
+
+    json_output_path = website_path / "songbook.json"
     sorted_data = {
         titlecase(artist): sorted([titlecase(title) for title in titles])
         for artist, titles in sorted(flattened_dict.items())  # Sort artists
