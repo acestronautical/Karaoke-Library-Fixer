@@ -1,6 +1,7 @@
 import os
 import shutil
-import hashlib
+import random
+import string
 import argparse
 import re
 import glob
@@ -126,8 +127,8 @@ class SongEntry:
         self.fallback_file_name = fallback_file_name
         self.current_dir = current_dir
         self.trackno = str(int(trackno)).zfill(2) if trackno else "01"
-        if discid is None or discid.startswith("XX"):
-            discid = "XX" + compute_short_hash(self.old_path())
+        if discid is None:
+            discid = "XX" + create_short_uuid()
         self.discid = discid.upper()
 
     def old_path(self):
@@ -424,7 +425,7 @@ def make_entry_from_template(file_path):
             clean_file_name = entry.fallback_file_name
             # Adjust file name based on certain conditions
             if clean_file_name.startswith("XX"):
-                clean_file_name = clean_file_name[11:]
+                clean_file_name = clean_file_name[14:]
             # Break if the file name reduction is too large
             if len(file_name) / len(clean_file_name) < 0.75:
                 break
@@ -526,15 +527,12 @@ def write_latex_songbook_to_file(artist_song_dict, output_file_path):
             file.write(post_file.read())
 
 
-def compute_short_hash(file_path, chunk_size=4096):
-    hash_sha256 = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(chunk_size), b""):
-            hash_sha256.update(chunk)
-    hash_hex = hash_sha256.hexdigest()
-    # Replace non-alphanumeric characters with 'A'
-    cleaned_hash = re.sub(r'[^a-zA-Z0-9]', 'A', hash_hex)
-    return cleaned_hash[:5]
+def create_short_uuid(length=6):
+    # Define the character set: letters (uppercase and lowercase) and digits
+    characters = string.ascii_letters + string.digits
+    # Generate a random 6-character string
+    short_uuid = ''.join(random.choices(characters, k=length))
+    return short_uuid
 
 
 def rename_and_rearchive(entry, root_dir, delete=False):
@@ -590,11 +588,7 @@ def process_archive(old_path, new_path, new_path_fallback, temp_dir, entry):
                 for file in temp_dir.iterdir():
                     if file.is_file():
                         new_archive.write(file, arcname=file.name)
-        entry.discid = "XX" + compute_short_hash(new_path)
-        entry.discid = entry.discid.upper()
-        hash_path = new_path.parent / entry.new_file_name_wext()
-        new_path.rename(hash_path)
-        print(f"\nCopied and renamed contents:\n {old_path} to\n {hash_path}", flush=True)
+        print(f"\nCopied and renamed contents:\n {old_path} to\n {new_path}", flush=True)
     except Exception as e:
         print(f"Error: {e}. Bad archive file: {old_path}", flush=True)
         print(f"Copying bad archive from {old_path} to {new_path_fallback}.", flush=True)
