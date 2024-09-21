@@ -61,9 +61,8 @@ A_T_D = re.compile(rf"^{ARTNONUM}{DASH}{TITLE}{DASH}{DIDUPPER}$")
 D__N_A_T = re.compile(rf"{DID}{DASHSTRICT}\d\d{DASHSTRICT}{ART}{DASHSTRICT}{TITLE}$")
 # ANTIPATTERN CBE314 - 01 - Do The Hokey Pokey.cdg
 D__NUM_T = re.compile(rf"^{DID}[-0-9]+{DASHSTRICT}\d\d{DASHSTRICT}{TITLE}$")
-
+# CBE-314-010-901 - Childrens Songs - Do The Hokey Pokey.cdg
 D__A_T = re.compile(rf"^{DID}[-0-9]+{DASHSTRICT}{ART}{DASHSTRICT}{TITLE}$")
-
 # CBE113 - 02 - Duet (Hill - Mcgraw) - It's Your Love
 D_NUM_A_T = re.compile(rf"^{DID}{DASHSTRICT}{NUMBERS}{DASHSTRICT}{ARTWDASH}{DASHSTRICT}{TITLE}$")
 # ASK-65A-02 - Keys, Alicia - Karma
@@ -179,7 +178,7 @@ def normalize_artist(name):
     name = name.replace("-", " ")
     name = fix_last_comma_first(name)
     name = fix_the(name, Mode.ARTIST)
-    return name
+    return name.strip()
 
 
 def normalize_title(title):
@@ -187,7 +186,7 @@ def normalize_title(title):
     title = clean_words(title)
     title = title.replace("-", " ")
     title = fix_the(title, Mode.TITLE)
-    return title
+    return title.strip()
 
 
 def fix_last_comma_first(name):
@@ -394,7 +393,8 @@ def is_music(file_path):
     return ext in valid_extensions
 
 
-def make_entry_from_template(file_path, file_name):
+def make_entry_from_template(file_path):
+    file_name = os.path.basename(file_path)
     dir_name = os.path.dirname(file_path)
     text, ext = os.path.splitext(file_name)
     text = os.path.basename(text)
@@ -411,8 +411,8 @@ def make_entry_from_template(file_path, file_name):
             ):
                 break
             entry = SongEntry(
-                discid=match.group("DiscID"),
-                trackno=match.group("TrackNo"),
+                discid=match.groupdict().get("DiscID"),
+                trackno=match.groupdict().get("TrackNo"),
                 artist=match.group("Artist").strip(),
                 title=match.group("Title").strip(),
                 template=template,
@@ -432,10 +432,10 @@ def make_entry_from_template(file_path, file_name):
     return None
 
 
-def make_broken_entry(file_path, file_name):
+def make_broken_entry(file_path):
+    file_name = os.path.basename(file_path)
     dir_name = os.path.dirname(file_path)
     text, ext = os.path.splitext(file_name)
-    text = os.path.basename(text)
     cleaned = clean_words(text)
     return SongEntry(
         discid=None,
@@ -451,10 +451,9 @@ def make_broken_entry(file_path, file_name):
 
 
 def eval_templates(file_path):
-    file_name = os.path.basename(file_path)
-    entry = make_entry_from_template(file_path, file_name)
+    entry = make_entry_from_template(file_path)
     if entry is None:
-        entry = make_broken_entry(file_path, file_name)
+        entry = make_broken_entry(file_path)
     return entry
 
 
@@ -462,15 +461,13 @@ def read_song_book_from_dir(root_dir):
     song_book = defaultdict(list)
     broken_song_book = defaultdict(list)
     for file_path in glob.iglob(f"{root_dir}/**", recursive=True):
-        if not os.path.isfile(file_path):
-            continue
-        if not is_music(file_path):
+        if not os.path.isfile(file_path) or not is_music(file_path):
             continue
         entry = eval_templates(file_path)
         if entry.artist:
             entry = fix_all_artist_flags(entry)
-            entry.artist = normalize_artist(entry.artist.strip())
-            entry.title = normalize_title(entry.title.strip())
+            entry.artist = normalize_artist(entry.artist)
+            entry.title = normalize_title(entry.title)
             song_book[entry.artist].append(entry)
             print(f"parsed {entry.new_file_name()}", flush=True)
         else:
@@ -556,7 +553,7 @@ def rename_and_rearchive(entry, root_dir, delete=False):
             path.mkdir(parents=True, exist_ok=True)
         try:
             # Process archives (.zip, .rar)
-            if entry.file_ext in [".zip", ".rar"]:
+            if entry.file_ext in [".zip", ".rar"] and not new_path.name == old_path.name:
                 process_archive(old_path, new_path, new_path_fallback, temp_dir)
             else:
                 shutil.copy2(old_path, new_path)

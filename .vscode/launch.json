@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Run fixsongs.py",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/fixsongs.py",
             "args": [
