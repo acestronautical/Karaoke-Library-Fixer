@@ -551,20 +551,20 @@ def rename_and_rearchive(entry, root_dir, delete=False):
 
     # Create necessary directories
     if new_path.exists():
-        print(f"\Already Exists:\n {old_path} vs\n {new_path}", flush=True)
+        print(f"\nAlready Exists:\n {old_path} vs\n {new_path}", flush=True)
     else:
         for path in [new_path_fallback.parent, new_path.parent, temp_dir]:
             path.mkdir(parents=True, exist_ok=True)
         try:
             # Process archives (.zip, .rar)
             if entry.file_ext in [".zip", ".rar"] and not new_path.name == old_path.name:
-                process_archive(old_path, new_path, new_path_fallback, temp_dir)
+                process_archive(old_path, new_path, new_path_fallback, temp_dir, entry)
             else:
                 if not delete:
                     shutil.copy2(old_path, new_path)
                     print(f"\nCopied:\n {old_path} to\n {new_path}", flush=True)
                 else:
-                    print(f"\Moved:\n {old_path} to\n {new_path}", flush=True)
+                    print(f"\nMoved:\n {old_path} to\n {new_path}", flush=True)
                     old_path.rename(new_path)
         except Exception as e:
             print(f"Error: {e}")
@@ -573,7 +573,7 @@ def rename_and_rearchive(entry, root_dir, delete=False):
     handle_delete_original(old_path, new_path, delete)
 
 
-def process_archive(old_path, new_path, new_path_fallback, temp_dir):
+def process_archive(old_path, new_path, new_path_fallback, temp_dir, entry):
     """Process archive files by decompressing, renaming contents, and re-archiving."""
     try:
         with ArchiveFile(old_path) as archive:
@@ -590,7 +590,11 @@ def process_archive(old_path, new_path, new_path_fallback, temp_dir):
                 for file in temp_dir.iterdir():
                     if file.is_file():
                         new_archive.write(file, arcname=file.name)
-        print(f"\nCopied and renamed contents:\n {old_path} to\n {new_path}", flush=True)
+        entry.discid = "XX" + compute_short_hash(new_path)
+        entry.discid = entry.discid.upper()
+        hash_path = new_path.parent / entry.new_file_name_wext()
+        new_path.rename(hash_path)
+        print(f"\nCopied and renamed contents:\n {old_path} to\n {hash_path}", flush=True)
     except Exception as e:
         print(f"Error: {e}. Bad archive file: {old_path}", flush=True)
         print(f"Copying bad archive from {old_path} to {new_path_fallback}.", flush=True)
