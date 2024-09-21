@@ -2,3 +2,6 @@ venv
 sample-lib
 .DS_STORE
 new-sample-lib
+.ruff_cache
+build
+dist
