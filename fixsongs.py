@@ -1,7 +1,6 @@
 import os
 import shutil
-import random
-import string
+import hashlib
 import argparse
 import re
 import glob
@@ -128,7 +127,7 @@ class SongEntry:
         self.current_dir = current_dir
         self.trackno = str(int(trackno)).zfill(2) if trackno else "01"
         if discid is None:
-            discid = "XX" + create_short_uuid()
+            discid = "XX" + compute_short_hash(self.old_path())
         self.discid = discid.upper()
 
     def old_path(self):
@@ -425,7 +424,7 @@ def make_entry_from_template(file_path):
             clean_file_name = entry.fallback_file_name
             # Adjust file name based on certain conditions
             if clean_file_name.startswith("XX"):
-                clean_file_name = clean_file_name[14:]
+                clean_file_name = clean_file_name[11:]
             # Break if the file name reduction is too large
             if len(file_name) / len(clean_file_name) < 0.75:
                 break
@@ -527,12 +526,15 @@ def write_latex_songbook_to_file(artist_song_dict, output_file_path):
             file.write(post_file.read())
 
 
-def create_short_uuid(length=6):
-    # Define the character set: letters (uppercase and lowercase) and digits
-    characters = string.ascii_letters + string.digits
-    # Generate a random 6-character string
-    short_uuid = ''.join(random.choices(characters, k=length))
-    return short_uuid
+def compute_short_hash(file_path, chunk_size=4096):
+    hash_sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(chunk_size), b""):
+            hash_sha256.update(chunk)
+    hash_hex = hash_sha256.hexdigest()
+    # Replace non-alphanumeric characters with 'A'
+    cleaned_hash = re.sub(r'[^a-zA-Z0-9]', 'A', hash_hex)
+    return cleaned_hash[:5]
 
 
 def rename_and_rearchive(entry, root_dir, delete=False):
