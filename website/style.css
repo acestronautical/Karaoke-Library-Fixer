@@ -1,10 +1,16 @@
 :root {
-    --primary-color: #007bff; /* Standard blue for primary actions */
-    --primary-hover: #c8d3de; /* Darker blue for hover */
-    --accent-color: #d2dbe2; /* Neutral gray for accents */
-    --background-light: #f8f9fa; /* Light gray background for a clean look */
-    --text-dark: #343a40; /* Dark gray for readable text */
-    --text-light: #ffffff; /* White for contrast text */
+    --primary-color: #1a76d9;
+    /* Standard blue for primary actions */
+    --primary-hover: #c8d3de;
+    /* Darker blue for hover */
+    --accent-color: #d2dbe2;
+    /* Neutral gray for accents */
+    --background-light: #f8f9fa;
+    /* Light gray background for a clean look */
+    --text-dark: #343a40;
+    /* Dark gray for readable text */
+    --text-light: #ffffff;
+    /* White for contrast text */
 }
 
 
@@ -32,17 +38,24 @@
     min-width: 100px;
 }
 
+#songsBy{
+    font-size: .8em;
+}
+
 #songListHeader {
-    text-align:left;
+    text-align: left;
+    font-size: .95em;
 }
 
 #closeSongList {
-    margin-right: 20px; 
+    margin-right: 6px;
     cursor: pointer;
     border: none;
     color: var(--primary-color);
-    font-size: 1.4em;
-    background-color:transparent;
+    font-size: 1.8em;
+    background-color: transparent;
+    font-weight: bold;
+    transform: translateY(5px);
 }
 
 #paginationControls {
@@ -50,29 +63,30 @@
     align-items: center;
     display: flex;
     justify-content: center;
-    margin-top: 10px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
 #resultsList {
     padding-left: 14px;
-    list-style-type: disc; /* Use disc bullets for the list */
-    margin-left: 20px; /* Add some margin to the left for bullets */
+    list-style-type: disc;
+    /* Use disc bullets for the list */
+    margin-left: 20px;
+    /* Add some margin to the left for bullets */
 }
 
 #resultsList li {
     background-color: var(--background-light);
-    border: none; /* Remove border for a cleaner look */
-    padding: 1px 1px; /* Adjust padding for better spacing */
+    border: none;
+    /* Remove border for a cleaner look */
+    padding: 1px 1px;
+    /* Adjust padding for better spacing */
     transition: background-color 0.3s;
 }
 
-#resultsList li:hover {
-    background-color: var(--primary-hover); /* Change background on hover */
-}
-
 .song-item {
-    list-style-type: none; /* Keep song items without bullets */
+    list-style-type: none;
+    /* Keep song items without bullets */
 }
 
 #artistName {
@@ -84,6 +98,7 @@
 .song-list {
     list-style-type: none;
     padding: 0;
+    margin: 5px;
 }
 
 #songList {
@@ -148,12 +163,15 @@
     font-size: 0.85em;
     min-width: 100px;
     padding: 5px;
-    display: flex; /* Enable Flexbox */
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
+    display: flex;
+    /* Enable Flexbox */
+    align-items: center;
+    /* Center vertically */
+    justify-content: center;
+    /* Center horizontally */
     transition: background-color 0.3s;
     font-family: serif;
-    text-align:center;
+    text-align: center;
     text-align-last: center;
 }
 
@@ -169,12 +187,23 @@
     margin: 2px 0;
 }
 
+#searchButtonContainer {
+    align-items: center;
+    display: flex;
+    margin: 10px;
+    justify-content:space-between;
+}
+
 .no-artists {
     color: var(--text-dark);
     padding: 10px;
     text-align: center;
 }
 
+
+
+#feelingLuckyButton,
+#searchButton,
 .pagination-button {
     background-color: var(--primary-color);
     border: 1px solid var(--primary-color);
@@ -202,7 +231,8 @@
 .results-list li:hover,
 .song-item:hover,
 .artist-item:hover {
-    background-color: var(--primary-hover); /* Light yellow hover */
+    background-color: var(--primary-hover);
+    /* Light yellow hover */
 }
 
 .tab {
@@ -233,6 +263,16 @@
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 5px;
+}
+
+a {
+    color: var(--text-dark);
+    text-decoration: none; 
+}
+
+a:hover {
+    color: var(--primary-hover); /* Optional hover color */
+    text-decoration: none; /* Ensure no underline on hover */
 }
 
 body {

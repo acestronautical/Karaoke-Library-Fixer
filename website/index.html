@@ -19,12 +19,16 @@
     <div id="search" class="tab tab-content" style="display: block;">
         <h4>Search Songbook</h4>
         <input type="text" id="searchInput" placeholder="Search songs or artists..." />
+        <div id="searchButtonContainer">
+        <button id="searchButton">Search Songs</button>
+        <button id="feelingLuckyButton">I'm Feeling Lucky</button>
+        </div>
         <ul id="resultsList"></ul>
     </div>
     <!-- Browse -->
     <div id="browse" class="tab tab-content">
         <div class="dropdown-container">
-            <h4>Browse by Artist</h4>
+            <h5>Browse by Artist</h5>
             <select id="alphabetDropdown">
                 <option value="">Select a letter</option>
             </select>
@@ -32,8 +36,8 @@
         <ul class="artist-list" id="artistList"></ul>
         <div id="paginationControls"></div>
         <h5 id="songListHeader" style="display:none;">
-            <button id="closeSongList">&larr;</button>
-            Songs by <span id="artistName"></span>
+        <button id="closeSongList">&larr;</button>
+                <span id="artistName"></span>
         </h5>
         <ul id="songList" style="display:none;"></ul>
     </div>

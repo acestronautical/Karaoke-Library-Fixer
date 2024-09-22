@@ -56,20 +56,25 @@ function setupSearch(songs) {
     };
   }
 
-  searchInput.addEventListener('input', debounce(() => {
+  document.getElementById('searchButton').addEventListener('click', () => {
     const query = searchInput.value.trim().toLowerCase();
     const results = fuse.search(query);
     resultsList.innerHTML = '';
-    // Limit the number of results displayed to 50
-    const maxResultsToDisplay = 50;
+    const maxResultsToDisplay = 100;
     const resultsToDisplay = results.slice(0, maxResultsToDisplay);
+    
     if (resultsToDisplay.length > 0) {
       resultsToDisplay.forEach(result => {
         const li = document.createElement('li');
-        li.textContent = `${result.item.artist} - ${result.item.title}`;
+        const a = document.createElement('a'); // Create a link
+        const searchQuery = `${result.item.artist} ${result.item.title}`;
+        a.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`; // Set the search URL
+        a.target = '_blank'; // Open in a new tab
+        a.textContent = `${result.item.artist} - ${result.item.title}`;
+        li.appendChild(a); // Append the link to the list item
         resultsList.appendChild(li);
       });
-      // If there are more than 100 results, indicate that more are available
+      
       if (results.length > maxResultsToDisplay) {
         const li = document.createElement('li');
         li.textContent = `And ${results.length - maxResultsToDisplay} more...`;
@@ -80,8 +85,37 @@ function setupSearch(songs) {
       li.textContent = 'No results found';
       resultsList.appendChild(li);
     }
-  }, 600));
+  });
+  
+  document.getElementById('feelingLuckyButton').addEventListener('click', () => {
+    if (songs.length === 0) return;
+    
+    const randomSongs = [];
+    while (randomSongs.length < 3 && randomSongs.length < songs.length) {
+      const randomIndex = Math.floor(Math.random() * songs.length);
+      const randomSong = songs[randomIndex];
+      if (!randomSongs.includes(randomSong)) {
+        randomSongs.push(randomSong);
+      }
+    }
+    
+    const resultsList = document.getElementById('resultsList');
+    resultsList.innerHTML = '';
+    randomSongs.forEach(song => {
+      const li = document.createElement('li');
+      const a = document.createElement('a'); // Create a link
+      const searchQuery = `${song.artist} ${song.title}`;
+      a.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`; // Set the search URL
+      a.target = '_blank'; // Open in a new tab
+      a.textContent = `${song.artist} - ${song.title}`;
+      li.appendChild(a); // Append the link to the list item
+      resultsList.appendChild(li);
+    });
+  });
+  
+  
 }
+
 
 
 // Set up alphabet browse functionality
@@ -93,7 +127,7 @@ function setupAlphabetBrowse(data) {
   const closeSongList = document.getElementById('closeSongList');
   const songListHeader = document.getElementById('songListHeader');
   const artistNameElem = document.getElementById('artistName');
-  const paginationControls =  document.getElementById('paginationControls')
+  const paginationControls = document.getElementById('paginationControls')
   const itemsPerPage = getColumnCount() * 7; // Number of artists to display per page
   let currentPage = 1; // Track the current page
 
@@ -231,36 +265,36 @@ function setupAlphabetBrowse(data) {
   }
 
 
-// Event listener for hiding song list and song list header
-closeSongList.addEventListener('click', function () {
-  // Hide the song list and the song list header
-  songList.style.display = 'none';
-  songListHeader.style.display = 'none';
+  // Event listener for hiding song list and song list header
+  closeSongList.addEventListener('click', function () {
+    // Hide the song list and the song list header
+    songList.style.display = 'none';
+    songListHeader.style.display = 'none';
 
-  // Show the artist list and pagination controls
-  artistList.style.display = 'block';
-  paginationControls.style.display = 'block';
-});
-
-// Display songs when an artist is clicked
-function displaySongsByArtist(artist, songs) {
-  songList.innerHTML = ''; // Clear previous songs
-  artistNameElem.textContent = artist; // Update artist name in the header
-  songListHeader.style.display = 'block'; // Show the song list header
-  songList.style.display = 'block';
-
-  paginationControls.style.display = 'none'; // Hide pagination controls
-  artistList.style.display = 'none'; // Hide artist list
-
-  // Populate the song list
-  songs.forEach(song => {
-    const li = document.createElement('li');
-    li.classList.add('song-item'); // Added class for styling
-    li.textContent = song;
-    songList.appendChild(li);
+    // Show the artist list and pagination controls
+    artistList.style.display = 'block';
+    paginationControls.style.display = 'block';
   });
-}
 
-
-
+  // Display songs when an artist is clicked
+  function displaySongsByArtist(artist, songs) {
+    songList.innerHTML = ''; 
+    artistNameElem.textContent = artist;
+    songListHeader.style.display = 'block'; 
+    songList.style.display = 'block';
+    
+    paginationControls.style.display = 'none'; 
+    artistList.style.display = 'none';
+  
+    songs.forEach(song => {
+      const li = document.createElement('li');
+      const a = document.createElement('a'); // Create a link
+      const searchQuery = `${artist} ${song}`;
+      a.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`; // Set the search URL
+      a.target = '_blank'; // Open in a new tab
+      a.textContent = song;
+      li.appendChild(a); // Append the link to the list item
+      songList.appendChild(li);
+    });
+  }  
 }
