@@ -709,7 +709,7 @@ def run_fix_songs(args):
         for artist, titles in sorted(flattened_dict.items())  # Sort artists
     }
     with open(json_output_path, "w") as json_file:
-        json.dump(sorted_data, json_file, indent=4)
+        json.dump(sorted_data, json_file, separators=(",", ":"))
     latex_output_path = songbook_path / "songbook.tex"
     write_latex_songbook_to_file(flattened_dict, latex_output_path)
 
