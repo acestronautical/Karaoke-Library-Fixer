@@ -626,6 +626,10 @@ def process_archive(old_path, new_path, new_path_fallback, temp_dir, entry):
         print(f"\nError: {e}. Bad archive file: {old_path}\n", flush=True)
         print(f"Copying bad archive from {old_path} to {new_path_fallback}.", flush=True)
         shutil.copy2(old_path, new_path_fallback)
+    finally:
+        # Ensure the temp_dir is deleted after processing
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        print(f"\nTemporary directory {temp_dir} deleted.", flush=True)
 
 
 def remove_temp_directory(root_dir: Path):
