@@ -707,7 +707,7 @@ def run_fix_songs(args):
         elif item.is_dir():  # If it's a directory, copy its contents
             shutil.copytree(item, website_path / item.name, dirs_exist_ok=True)
 
-    json_output_path = website_path / "songbook.json"
+    json_output_path = website_path / "songs.json"
     sorted_data = {
         titlecase(artist): sorted([titlecase(title) for title in titles])
         for artist, titles in sorted(flattened_dict.items())  # Sort artists
