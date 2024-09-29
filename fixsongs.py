@@ -530,7 +530,7 @@ def remove_similar_songs(songs):
 def write_latex_songbook_to_file(artist_song_dict, output_file_path):
     with open(output_file_path, "w") as file:
         # Write pre-content
-        with open("songbook-pre.txt", "r") as pre_file:
+        with open("songbook-pre.txt", "r", encoding="utf-8") as pre_file:
             file.write(pre_file.read())
 
         # Sort artists alphabetically
